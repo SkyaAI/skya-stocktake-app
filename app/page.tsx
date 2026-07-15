@@ -1436,41 +1436,34 @@ export default function Home() {
       )}
 
       <div className={user ? "lg:pl-72" : undefined}>
-        <main className="mx-auto flex min-h-screen w-full max-w-[112rem] flex-col gap-4 px-4 py-5 sm:px-6">
-          <header className="flex flex-col gap-3 border-b border-stone-300 pb-4 sm:flex-row sm:items-end sm:justify-between">
-            <div className="flex items-start gap-3">
+        <main className="mx-auto flex min-h-screen w-full max-w-[112rem] flex-col gap-4 px-4 py-5 pb-24 sm:px-6 lg:pb-5">
+          <header className="rounded border border-[#0B2F5B] bg-[#0B2F5B] px-4 py-4 text-white shadow-sm sm:flex sm:items-center sm:justify-between">
+            <div className="flex items-center justify-between gap-3 sm:justify-start">
+              <div>
+                <AuzkiwiLogo />
+              </div>
               {user && (
                 <button
                   aria-controls="mobile-stocktake-navigation"
                   aria-expanded={mobileNavOpen}
                   aria-label="Open navigation"
-                  className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded border border-stone-300 bg-white text-stone-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2 lg:hidden"
+                  className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded border border-white/20 bg-white text-[#0B2F5B] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2 focus:ring-offset-[#0B2F5B] lg:hidden"
                   onClick={() => setMobileNavOpen(true)}
                   type="button"
                 >
                   <MenuIcon className="h-5 w-5" />
                 </button>
               )}
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-emerald-800">
-                  Skya Stocktake
-                </p>
-                {user && activeOrganisation && (
-                  <p className="mt-1 text-xs font-semibold text-stone-600 lg:hidden">
-                    {displayUsername} · {activeOrganisation.name}
-                  </p>
-                )}
-              </div>
             </div>
             <div className="hidden flex-wrap items-center gap-2 lg:flex">
               {user && (
-                <span className="rounded border border-stone-300 bg-white px-3 py-2 text-sm font-semibold text-stone-700">
+                <span className="rounded border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-white">
                   {displayUsername}
                 </span>
               )}
               {user && (
                 <button
-                  className="rounded border border-stone-300 bg-white px-3 py-2 text-sm font-black text-stone-800 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2"
+                  className="rounded border border-[#F2B705] bg-[#F2B705] px-3 py-2 text-sm font-black text-[#0B2F5B] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#0B2F5B]"
                   onClick={signOut}
                   type="button"
                 >
@@ -1481,7 +1474,11 @@ export default function Home() {
           </header>
 
           {user && activeOrganisation && (
-            <MobileSectionTabs activeMode={mode} onSelect={selectNavigationMode} />
+            <MobileSectionTabs
+              activeMode={mode}
+              canManageOrganisation={canManageMembers}
+              onSelect={selectNavigationMode}
+            />
           )}
 
       {!supabaseConfigured && (
@@ -1564,7 +1561,7 @@ export default function Home() {
                 value={newSessionName}
                 onChange={(event) => setNewSessionName(event.target.value)}
               />
-              <button className="rounded bg-emerald-800 px-3 py-2 font-bold text-white">
+              <button className="rounded bg-[#0B2F5B] px-3 py-2 font-bold text-white">
                 Add
               </button>
             </form>
@@ -1578,7 +1575,7 @@ export default function Home() {
                   key={session.id}
                   className={`w-full rounded border px-3 py-3 text-left ${
                     selectedSessionId === session.id
-                      ? "border-emerald-800 bg-emerald-50"
+                      ? "border-[#0B2F5B] bg-[#F2B705]/15"
                       : "border-stone-200 bg-stone-50"
                   }`}
                   onClick={() => setSelectedSessionId(session.id)}
@@ -1596,10 +1593,10 @@ export default function Home() {
           {mode === "count" && (
             <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_420px]">
               <section className="rounded border border-stone-300 bg-white p-4 shadow-sm lg:shadow-none">
-                <div className="mb-4 rounded border border-emerald-200 bg-emerald-50 p-3 lg:hidden">
+                <div className="mb-4 rounded border border-[#0B2F5B]/20 bg-[#0B2F5B]/5 p-3 lg:hidden">
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-xs font-black uppercase text-emerald-900">
+                      <p className="text-xs font-black uppercase text-[#0B2F5B]">
                         Active session
                       </p>
                       <p className="mt-1 truncate text-lg font-black text-stone-950">
@@ -1609,7 +1606,7 @@ export default function Home() {
                     <button
                       aria-expanded={mobileSessionEditorOpen}
                       aria-label="Change active session"
-                      className="h-12 shrink-0 rounded border border-emerald-800 bg-white px-4 text-sm font-black text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2"
+                      className="h-12 shrink-0 rounded border border-[#0B2F5B] bg-white px-4 text-sm font-black text-[#0B2F5B] focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2"
                       onClick={() => setMobileSessionEditorOpen((open) => !open)}
                       type="button"
                     >
@@ -1617,14 +1614,14 @@ export default function Home() {
                     </button>
                   </div>
                   {mobileSessionEditorOpen && (
-                    <div className="mt-3 grid gap-3 border-t border-emerald-200 pt-3">
+                    <div className="mt-3 grid gap-3 border-t border-[#0B2F5B]/15 pt-3">
                       <form className="grid gap-2" onSubmit={createSession}>
                         <p className="text-xs font-bold uppercase text-stone-600">
                           Create new
                         </p>
                         <select
                           aria-label="Session preset"
-                          className="h-12 rounded border border-stone-300 bg-white px-3 text-base text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2"
+                          className="h-12 rounded border border-stone-300 bg-white px-3 text-base text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2"
                           onChange={(event) => setNewSessionName(event.target.value)}
                           value={SESSION_PRESETS.includes(newSessionName) ? newSessionName : ""}
                         >
@@ -1637,12 +1634,12 @@ export default function Home() {
                         </select>
                         <input
                           aria-label="Custom session name"
-                          className="h-12 rounded border border-stone-300 px-3 text-base focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2"
+                          className="h-12 rounded border border-stone-300 px-3 text-base focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2"
                           placeholder="Custom session"
                           value={newSessionName}
                           onChange={(event) => setNewSessionName(event.target.value)}
                         />
-                        <button className="h-12 rounded bg-emerald-800 px-4 text-base font-black text-white focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">
+                        <button className="h-12 rounded bg-[#0B2F5B] px-4 text-base font-black text-white focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2">
                           Add Session
                         </button>
                       </form>
@@ -1661,7 +1658,7 @@ export default function Home() {
                   <div>
                     <label className="text-sm font-black uppercase text-stone-700" htmlFor="count-product-code">Product code</label>
                     <input
-                      className="mt-2 h-14 w-full rounded border border-stone-300 px-4 text-xl font-black uppercase text-stone-950 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2 xl:text-lg"
+                      className="mt-2 h-14 w-full rounded border border-stone-300 px-4 text-xl font-black uppercase text-stone-950 focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2 xl:text-lg"
                       id="count-product-code"
                       inputMode="text"
                       placeholder="WH-0042"
@@ -1690,7 +1687,7 @@ export default function Home() {
                   <div>
                     <label className="text-sm font-black uppercase text-stone-700" htmlFor="count-quantity">Count quantity</label>
                     <input
-                      className="mt-2 h-14 w-full rounded border border-stone-300 px-4 text-xl font-black text-stone-950 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2 xl:text-lg"
+                      className="mt-2 h-14 w-full rounded border border-stone-300 px-4 text-xl font-black text-stone-950 focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2 xl:text-lg"
                       id="count-quantity"
                       inputMode="numeric"
                       min={0}
@@ -1702,7 +1699,7 @@ export default function Home() {
                   <div>
                     <label className="text-sm font-black uppercase text-stone-700" htmlFor="count-location">Location</label>
                     <input
-                      className="mt-2 h-14 w-full rounded border border-stone-300 px-4 text-lg font-bold text-stone-950 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2"
+                      className="mt-2 h-14 w-full rounded border border-stone-300 px-4 text-lg font-bold text-stone-950 focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2"
                       id="count-location"
                       placeholder="Optional"
                       value={locationInput}
@@ -1711,7 +1708,7 @@ export default function Home() {
                   </div>
                   <button
                     aria-label="Save entry"
-                    className="h-14 w-full rounded bg-emerald-800 px-5 text-lg font-black text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2 xl:w-auto xl:self-end xl:text-base"
+                    className="h-14 w-full rounded bg-[#0B2F5B] px-5 text-lg font-black text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2 xl:w-auto xl:self-end xl:text-base"
                     disabled={!selectedSessionId || saving}
                   >
                     {saving ? "Saving" : selectedSessionId ? (
@@ -1837,22 +1834,20 @@ function NavigationMenu({
     <aside
       className={
         isMobile
-          ? "relative z-10 flex h-full w-80 max-w-[86vw] flex-col border-r border-stone-300 bg-stone-50 shadow-2xl"
-          : "fixed inset-y-0 left-0 z-30 hidden w-72 flex-col border-r border-stone-300 bg-stone-50/95 shadow-sm lg:flex"
+          ? "relative z-10 flex h-full w-80 max-w-[86vw] flex-col border-r border-[#0B2F5B] bg-white shadow-2xl"
+          : "fixed inset-y-0 left-0 z-30 hidden w-72 flex-col border-r border-[#0B2F5B]/20 bg-white shadow-sm lg:flex"
       }
       id={isMobile ? "mobile-stocktake-navigation" : "desktop-stocktake-navigation"}
     >
-      <div className="flex items-start justify-between border-b border-stone-300 p-5">
+      <div className="flex items-start justify-between border-b border-[#0B2F5B]/15 bg-[#0B2F5B] p-5 text-white">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-emerald-800">
-            Skya Stocktake
-          </p>
-          <p className="mt-2 text-lg font-black text-stone-950">Navigation</p>
+          <AuzkiwiLogo />
+          <p className="mt-3 text-lg font-black text-white">Navigation</p>
         </div>
         {isMobile && (
           <button
             aria-label="Close navigation"
-            className="inline-flex h-10 w-10 items-center justify-center rounded border border-stone-300 bg-white text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2"
+            className="inline-flex h-10 w-10 items-center justify-center rounded border border-white/20 bg-white text-[#0B2F5B] focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2 focus:ring-offset-[#0B2F5B]"
             onClick={onClose}
             type="button"
           >
@@ -1873,9 +1868,9 @@ function NavigationMenu({
           return (
             <button
               aria-current={active ? "page" : undefined}
-              className={`flex w-full items-center gap-3 rounded border px-3 py-3 text-left transition focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2 ${
+              className={`flex w-full items-center gap-3 rounded border px-3 py-3 text-left transition focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2 ${
                 active
-                  ? "border-emerald-800 bg-emerald-50 text-emerald-950"
+                  ? "border-[#F2B705] bg-[#0B2F5B] text-white"
                   : "border-transparent bg-transparent text-stone-700 hover:border-stone-300 hover:bg-white"
               }`}
               key={item.id}
@@ -1885,7 +1880,7 @@ function NavigationMenu({
               <span
                 className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded border ${
                   active
-                    ? "border-emerald-800 bg-emerald-800 text-white"
+                    ? "border-[#F2B705] bg-[#F2B705] text-[#0B2F5B]"
                     : "border-stone-300 bg-white text-stone-700"
                 }`}
               >
@@ -1913,12 +1908,24 @@ function NavigationMenu({
             )}
           </div>
           <button
-            className="mt-3 h-12 w-full rounded border border-stone-300 bg-white px-4 text-base font-black text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2"
+            className="mt-3 h-12 w-full rounded border border-stone-300 bg-white px-4 text-base font-black text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2"
             onClick={onSignOut}
             type="button"
           >
             Sign Out
           </button>
+          <p className="mt-4 text-center text-xs font-semibold text-stone-500">
+            Auzkiwi Stocktake
+            <br />
+            Beta v0.3
+          </p>
+        </div>
+      )}
+      {!isMobile && (
+        <div className="border-t border-stone-200 px-5 py-4 text-xs font-semibold text-stone-500">
+          Auzkiwi Stocktake
+          <br />
+          Beta v0.3
         </div>
       )}
     </aside>
@@ -1927,15 +1934,21 @@ function NavigationMenu({
 
 function MobileSectionTabs({
   activeMode,
+  canManageOrganisation,
   onSelect,
 }: {
   activeMode: NavMode;
+  canManageOrganisation: boolean;
   onSelect: (mode: NavMode) => void;
 }) {
-  const items = NAV_ITEMS.filter((item) => item.id !== "organisation");
+  const items = NAV_ITEMS.filter((item) => item.id !== "organisation" || canManageOrganisation);
 
   return (
-    <nav aria-label="Primary stocktake sections" className="grid grid-cols-3 gap-2 lg:hidden">
+    <nav
+      aria-label="Primary stocktake sections"
+      className="fixed inset-x-0 bottom-0 z-40 grid border-t border-[#F2B705]/40 bg-[#0B2F5B] px-2 pb-[calc(env(safe-area-inset-bottom)+0.35rem)] pt-2 shadow-[0_-8px_24px_rgba(11,47,91,0.18)] lg:hidden"
+      style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
+    >
       {items.map((item) => {
         const Icon = item.icon;
         const active = activeMode === item.id;
@@ -1943,24 +1956,47 @@ function MobileSectionTabs({
         return (
           <button
             aria-current={active ? "page" : undefined}
-            className={`min-h-14 rounded border px-2 py-2 text-center focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2 ${
+            className={`min-h-14 rounded px-1 py-2 text-center text-xs font-black focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2 focus:ring-offset-[#0B2F5B] ${
               active
-                ? "border-emerald-800 bg-emerald-800 text-white"
-                : "border-stone-300 bg-white text-stone-800"
+                ? "bg-white/10 text-[#F2B705]"
+                : "text-white/85"
             }`}
             key={item.id}
             onClick={() => onSelect(item.id)}
             type="button"
           >
             <Icon className="mx-auto h-5 w-5" />
-            <span className="mt-1 block text-xs font-black">{item.label}</span>
+            <span className="mt-1 block leading-tight">{item.label}</span>
+            {active && <span className="mx-auto mt-1 block h-1 w-8 rounded-full bg-[#F2B705]" />}
           </button>
         );
       })}
     </nav>
   );
 }
-
+function AuzkiwiLogo() {
+  return (
+    <div className="flex items-center gap-3" aria-label="Auzkiwi Stocktake">
+      <span>
+        <img
+          alt="Auzkiwi logo"
+          className="h-11 w-11 object-contain sm:h-12 sm:w-12"
+          height={48}
+          src="/auzkiwi-logo.jpg"
+          width={48}
+        />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-sm font-black uppercase tracking-[0.2em] text-white">
+          Auzkiwi
+        </span>
+        <span className="block text-[11px] font-bold uppercase tracking-[0.18em] text-white/75">
+          Stocktake
+        </span>
+      </span>
+    </div>
+  );
+}
 function MenuIcon({ className }: NavIconProps) {
   return (
     <svg
@@ -2061,6 +2097,82 @@ function BuildingIcon({ className }: NavIconProps) {
     >
       <path d="M4 21h16M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16" />
       <path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1" />
+    </svg>
+  );
+}
+
+function FileExportIcon({ className }: NavIconProps) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      <path d="M14 3v5h5" />
+      <path d="M5 21V5a2 2 0 0 1 2-2h7l5 5v13H5Z" />
+      <path d="M8 15h8M12 11v8M12 19l3-3M12 19l-3-3" />
+    </svg>
+  );
+}
+
+function ExcelFileIcon({ className }: NavIconProps) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      <path d="M14 3v5h5" />
+      <path d="M5 21V5a2 2 0 0 1 2-2h7l5 5v13H5Z" />
+      <path d="m9 12 6 6M15 12l-6 6" />
+    </svg>
+  );
+}
+
+function PdfFileIcon({ className }: NavIconProps) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      <path d="M14 3v5h5" />
+      <path d="M5 21V5a2 2 0 0 1 2-2h7l5 5v13H5Z" />
+      <path d="M8 17v-5h2a1.5 1.5 0 0 1 0 3H8M13 17v-5h1.5a2.5 2.5 0 0 1 0 5H13M18 12h-2v5" />
+    </svg>
+  );
+}
+
+function PrintIcon({ className }: NavIconProps) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      <path d="M7 8V4h10v4" />
+      <path d="M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2" />
+      <path d="M7 14h10v6H7z" />
     </svg>
   );
 }
@@ -2185,7 +2297,7 @@ function AuthPanel({
           />
         </div>
         <button
-          className="w-full rounded bg-emerald-800 px-4 py-3 font-black text-white"
+          className="w-full rounded bg-[#0B2F5B] px-4 py-3 font-black text-white"
           disabled={disabled}
         >
           {authMode === "sign-in" ? "Sign In" : "Create Account"}
@@ -2238,8 +2350,8 @@ function ProductLookup({
   if (matchedProduct) {
     return (
       <div className="mt-4 rounded border border-emerald-300 bg-emerald-50 p-3">
-        <p className="font-black text-emerald-950">{matchedProduct.name}</p>
-        <p className="text-sm text-emerald-800">
+        <p className="font-black text-[#0B2F5B]">{matchedProduct.name}</p>
+        <p className="text-sm text-[#0B2F5B]">
           {matchedProduct.code} · {matchedProduct.categories?.name ?? "Uncategorised"}
         </p>
       </div>
@@ -2340,14 +2452,14 @@ function EntryList({
                 <div className="mt-3 grid gap-2 sm:flex">
                   <input
                     aria-label="Edit count quantity"
-                    className="h-12 w-full rounded border border-stone-300 px-3 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2 sm:w-28"
+                    className="h-12 w-full rounded border border-stone-300 px-3 font-bold focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2 sm:w-28"
                     min={0}
                     type="number"
                     value={editingCount}
                     onChange={(event) => onEditingCount(event.target.value)}
                   />
                   <button
-                    className="h-12 rounded bg-emerald-800 px-4 font-bold text-white focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2"
+                    className="h-12 rounded bg-[#0B2F5B] px-4 font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2"
                     onClick={() => onSaveEdit(entry.id)}
                   >
                     Save
@@ -2356,7 +2468,7 @@ function EntryList({
               ) : (
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:flex">
                   <button
-                    className="h-12 rounded border border-stone-300 bg-white px-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2"
+                    className="h-12 rounded border border-stone-300 bg-white px-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2"
                     onClick={() => onEdit(entry)}
                   >
                     Edit
@@ -2431,7 +2543,7 @@ function OrganisationPanel({
             Active organisation
           </label>
           <select
-            className="mt-1 w-full rounded border border-stone-300 bg-white px-3 py-3 font-semibold text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2"
+            className="mt-1 w-full rounded border border-stone-300 bg-white px-3 py-3 font-semibold text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2"
             id="organisation-switcher"
             onChange={(event) => onOrganisationChange(event.target.value)}
             value={activeOrganisationId}
@@ -2455,14 +2567,14 @@ function OrganisationPanel({
       {canManageMembers && (
         <form className="mt-4 grid gap-2 lg:grid-cols-[minmax(220px,1fr)_220px_auto]" onSubmit={onAddMember}>
           <input
-            className="rounded border border-stone-300 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2"
+            className="rounded border border-stone-300 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2"
             placeholder="member@email.com"
             type="email"
             value={memberEmail}
             onChange={(event) => onMemberEmail(event.target.value)}
           />
           <select
-            className="rounded border border-stone-300 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2"
+            className="rounded border border-stone-300 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2"
             value={memberRole}
             onChange={(event) => onMemberRole(event.target.value as OrganisationRole)}
           >
@@ -2470,7 +2582,7 @@ function OrganisationPanel({
             <option value="supervisor">Supervisor</option>
             <option value="admin">Admin</option>
           </select>
-          <button className="rounded bg-emerald-800 px-4 py-3 text-sm font-black text-white focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">
+          <button className="rounded bg-[#0B2F5B] px-4 py-3 text-sm font-black text-white focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2">
             Add Member
           </button>
         </form>
@@ -2500,7 +2612,7 @@ function OrganisationPanel({
             {canManageMembers ? (
               <select
                 aria-label={`Role for ${displayName}`}
-                className="h-11 rounded border border-stone-300 bg-white px-3 font-semibold text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2"
+                className="h-11 rounded border border-stone-300 bg-white px-3 font-semibold text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2"
                 onChange={(event) =>
                   onUpdateMember(member, { role: event.target.value as OrganisationRole })
                 }
@@ -2517,7 +2629,7 @@ function OrganisationPanel({
               <button
                 className={`h-11 rounded border px-3 font-black focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                   member.status === "active"
-                    ? "border-emerald-700 bg-emerald-50 text-emerald-900 focus:ring-emerald-700"
+                    ? "border-emerald-700 bg-emerald-50 text-emerald-900 focus:ring-[#F2B705]"
                     : "border-red-300 bg-red-50 text-red-800 focus:ring-red-600"
                 }`}
                 onClick={() =>
@@ -2623,7 +2735,7 @@ function Report({
         <head><meta charset="utf-8" /></head>
         <body>
           <table>
-            <tr><th colspan="6">Skya Stocktake Report</th></tr>
+            <tr><th colspan="6">Auzkiwi Stocktake Report</th></tr>
             <tr><td>Session</td><td colspan="5">${htmlCell(sessionName)}</td></tr>
             <tr><td>Generated</td><td colspan="5">${htmlCell(generatedStamp)}</td></tr>
             <tr></tr>
@@ -2704,7 +2816,7 @@ function Report({
         </head>
         <body>
           <header>
-            <h1>Skya Stocktake Report</h1>
+            <h1>Auzkiwi Stocktake Report</h1>
             <p>Session: ${htmlCell(sessionName)}</p>
             <p>Generated: ${htmlCell(generatedStamp)}</p>
           </header>
@@ -2728,50 +2840,143 @@ function Report({
   }
 
   return (
-    <section className="rounded border border-stone-300 bg-white p-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <>
+    <section className="overflow-hidden rounded border border-[#0B2F5B]/20 bg-white shadow-sm lg:hidden">
+      <div className="bg-[#0B2F5B] px-4 py-4 text-white">
+        <h2 className="text-xl font-black">Stocktake Report</h2>
+      </div>
+      <div className="border-b border-stone-200 bg-white px-4 py-3">
+        <dl className="grid grid-cols-[110px_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm">
+          <dt className="font-black text-stone-950">Report name:</dt>
+          <dd className="truncate font-semibold text-stone-800">{session?.name ?? "Select a session"}</dd>
+          <dt className="font-black text-stone-950">Generated:</dt>
+          <dd className="font-semibold text-stone-800">{generatedStamp}</dd>
+        </dl>
+      </div>
+      <div className="border-b border-stone-200 bg-white px-4 py-4 text-center">
+        <p className="text-4xl font-black leading-none text-stone-950">{totalUnits}</p>
+        <p className="mt-1 text-xs font-black uppercase tracking-[0.18em] text-[#0B2F5B]">
+          Total units
+        </p>
+      </div>
+      <div className="grid grid-cols-4 gap-1 border-b border-stone-200 bg-white px-2 py-1.5">
+        <button
+          className="flex min-h-11 items-center justify-center gap-1 rounded px-1 text-xs font-bold text-[#0B2F5B] focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2"
+          onClick={exportCsv}
+          type="button"
+        >
+          <FileExportIcon className="h-4 w-4" />
+          CSV
+        </button>
+        <button
+          className="flex min-h-11 items-center justify-center gap-1 rounded px-1 text-xs font-bold text-[#0B2F5B] focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2"
+          onClick={exportExcel}
+          type="button"
+        >
+          <ExcelFileIcon className="h-4 w-4" />
+          Excel
+        </button>
+        <button
+          className="flex min-h-11 items-center justify-center gap-1 rounded px-1 text-xs font-bold text-[#0B2F5B] focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2"
+          onClick={() => openPrintableReport("pdf")}
+          type="button"
+        >
+          <PdfFileIcon className="h-4 w-4" />
+          PDF
+        </button>
+        <button
+          className="flex min-h-11 items-center justify-center gap-1 rounded px-1 text-xs font-bold text-[#0B2F5B] focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2"
+          onClick={() => openPrintableReport("print")}
+          type="button"
+        >
+          <PrintIcon className="h-4 w-4" />
+          Print
+        </button>
+      </div>
+      <div>
+        {groups.length === 0 && (
+          <p className="m-3 rounded border border-stone-200 bg-stone-50 p-3 text-sm text-stone-600">
+            No report rows yet. Save counts to see grouped totals immediately.
+          </p>
+        )}
+        {groups.map(([category, group]) => (
+          <div key={category}>
+            <div className="flex items-center justify-between bg-[#0B2F5B] px-3 py-2 text-white">
+              <h3 className="text-sm font-black uppercase tracking-wide">{category}</h3>
+              <span className="rounded bg-[#F2B705] px-2 py-1 text-xs font-black text-[#0B2F5B]">
+                {group.total}
+              </span>
+            </div>
+            <div className="grid grid-cols-[66px_minmax(0,1fr)_62px_48px] gap-2 border-b border-stone-200 bg-stone-50 px-3 py-2 text-[11px] font-black uppercase text-stone-900">
+              <span>Code</span>
+              <span>Description</span>
+              <span>Location</span>
+              <span className="text-right">Count</span>
+            </div>
+            <div className="divide-y divide-stone-200">
+              {group.rows.map((entry) => (
+                <div
+                  className="grid grid-cols-[66px_minmax(0,1fr)_62px_48px] items-start gap-2 px-3 py-2.5 text-[15px] text-stone-950"
+                  key={entry.id}
+                >
+                  <span className="font-bold">{entry.products?.code}</span>
+                  <span className="min-w-0 leading-snug">{entry.products?.name}</span>
+                  <span className="truncate font-semibold text-stone-700">
+                    {entry.location || "-"}
+                  </span>
+                  <span className="text-right font-black">{entry.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section className="hidden overflow-hidden rounded border border-[#0B2F5B]/20 bg-white shadow-sm lg:block">
+      <div className="border-b border-[#0B2F5B]/15 bg-[#0B2F5B] p-4 text-white sm:flex sm:items-end sm:justify-between sm:gap-4">
         <div>
-          <h2 className="text-2xl font-black text-stone-950">Report</h2>
-          <p className="text-sm text-stone-600">{session?.name ?? "Select a session"}</p>
-          <p className="text-xs font-semibold text-stone-500">
+          <h2 className="text-2xl font-black text-white">Report</h2>
+          <p className="mt-1 text-sm font-semibold text-white/85">{session?.name ?? "Select a session"}</p>
+          <p className="text-xs font-semibold text-white/65">
             Generated {generatedStamp}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-0">
           <button
-            className="rounded border border-stone-300 bg-white px-3 py-2 text-sm font-black"
+            className="rounded border border-white/20 bg-white px-3 py-2 text-sm font-black text-[#0B2F5B] focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2 focus:ring-offset-[#0B2F5B]"
             onClick={exportCsv}
             type="button"
           >
             Export CSV
           </button>
           <button
-            className="rounded border border-stone-300 bg-white px-3 py-2 text-sm font-black"
+            className="rounded border border-white/20 bg-white px-3 py-2 text-sm font-black text-[#0B2F5B] focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2 focus:ring-offset-[#0B2F5B]"
             onClick={exportExcel}
             type="button"
           >
             Excel
           </button>
           <button
-            className="rounded border border-stone-300 bg-white px-3 py-2 text-sm font-black"
+            className="rounded border border-white/20 bg-white px-3 py-2 text-sm font-black text-[#0B2F5B] focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2 focus:ring-offset-[#0B2F5B]"
             onClick={() => openPrintableReport("pdf")}
             type="button"
           >
             PDF
           </button>
           <button
-            className="rounded border border-stone-300 bg-white px-3 py-2 text-sm font-black"
+            className="rounded border border-white/20 bg-white px-3 py-2 text-sm font-black text-[#0B2F5B] focus:outline-none focus:ring-2 focus:ring-[#F2B705] focus:ring-offset-2 focus:ring-offset-[#0B2F5B]"
             onClick={() => openPrintableReport("print")}
             type="button"
           >
             Print
           </button>
-          <p className="rounded bg-stone-100 px-3 py-2 text-sm font-black">
+          <p className="rounded bg-[#F2B705] px-4 py-2 text-sm font-black text-[#0B2F5B]">
             {totalUnits} total units
           </p>
         </div>
       </div>
-      <div className="mt-4 space-y-4">
+      <div className="space-y-4 p-4">
         {groups.length === 0 && (
           <p className="rounded border border-stone-200 bg-stone-50 p-3 text-sm text-stone-600">
             No report rows yet. Save counts to see grouped totals immediately.
@@ -2779,9 +2984,9 @@ function Report({
         )}
         {groups.map(([category, group]) => (
           <div key={category} className="overflow-hidden rounded border border-stone-200">
-            <div className="flex items-center justify-between bg-stone-950 px-3 py-2 text-white">
+            <div className="flex items-center justify-between bg-[#0B2F5B] px-3 py-2 text-white">
               <h3 className="font-black">{category}</h3>
-              <span className="font-black">{group.total}</span>
+              <span className="rounded bg-[#F2B705] px-2 py-1 text-sm font-black text-[#0B2F5B]">{group.total}</span>
             </div>
             <div className="divide-y divide-stone-200">
               {group.rows.map((entry) => (
@@ -2811,6 +3016,7 @@ function Report({
         ))}
       </div>
     </section>
+    </>
   );
 }
 
@@ -2930,7 +3136,7 @@ function Catalogue({
             ))}
           </select>
           <button
-            className="rounded bg-emerald-800 px-3 py-2 font-black text-white disabled:bg-stone-400"
+            className="rounded bg-[#0B2F5B] px-3 py-2 font-black text-white disabled:bg-stone-400"
             disabled={!canManageCatalogue}
           >
             Add
@@ -2984,7 +3190,7 @@ function Catalogue({
             onChange={(event) => onCategoryName(event.target.value)}
           />
           <button
-            className="rounded bg-emerald-800 px-3 py-2 font-black text-white disabled:bg-stone-400"
+            className="rounded bg-[#0B2F5B] px-3 py-2 font-black text-white disabled:bg-stone-400"
             disabled={!canManageCatalogue}
           >
             Add
