@@ -48,6 +48,7 @@ type OrganisationMember = {
   invited_email: string | null;
   role: OrganisationRole;
   status: "pending" | "active" | "disabled";
+  profile?: Pick<UserProfile, "username" | "email" | "display_name"> | null;
 };
 type UserProfile = {
   username: string;
@@ -418,6 +419,10 @@ export default function Home() {
   const [authEmail, setAuthEmail] = useState("");
   const [authUsername, setAuthUsername] = useState("");
   const [authPassword, setAuthPassword] = useState("");
+  const [authOrganisationMode, setAuthOrganisationMode] = useState<"existing" | "new">("existing");
+  const [authOrganisationId, setAuthOrganisationId] = useState("");
+  const [authOrganisationName, setAuthOrganisationName] = useState("");
+  const [publicOrganisations, setPublicOrganisations] = useState<Organisation[]>([]);
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
   const [activeOrganisationId, setActiveOrganisationId] = useState("");
   const [organisationMembers, setOrganisationMembers] = useState<OrganisationMember[]>([]);
@@ -554,6 +559,16 @@ export default function Home() {
         setToast({ tone: "error", text: "Enter a valid email address." });
         return;
       }
+      if (authOrganisationMode === "existing" && !authOrganisationId) {
+        setSaving(false);
+        setToast({ tone: "error", text: "Choose an organisation or create a new one." });
+        return;
+      }
+      if (authOrganisationMode === "new" && authOrganisationName.trim().length < 2) {
+        setSaving(false);
+        setToast({ tone: "error", text: "Enter the new organisation name." });
+        return;
+      }
     }
 
     const authAction =
@@ -569,6 +584,10 @@ export default function Home() {
               emailRedirectTo: getAuthRedirectUrl(),
               data: {
                 username: normaliseUsername(authUsername),
+                organisation_mode: authOrganisationMode,
+                organisation_id: authOrganisationMode === "existing" ? authOrganisationId : null,
+                organisation_name:
+                  authOrganisationMode === "new" ? authOrganisationName.trim() : null,
               },
             },
           });
@@ -633,6 +652,26 @@ export default function Home() {
     const memberships = (membershipResult.data ?? []) as (OrganisationMember & {
       organisations?: Organisation | null;
     })[];
+    const memberUserIds = memberships
+      .map((membership) => membership.user_id)
+      .filter((id): id is string => Boolean(id));
+    let profileById = new Map<string, Pick<UserProfile, "username" | "email" | "display_name">>();
+    if (memberUserIds.length > 0) {
+      const { data: memberProfiles } = await supabase
+        .from("user_profiles")
+        .select("id,username,email,display_name")
+        .in("id", memberUserIds);
+      profileById = new Map(
+        ((memberProfiles ?? []) as (UserProfile & { id: string })[]).map((memberProfile) => [
+          memberProfile.id,
+          {
+            username: memberProfile.username,
+            email: memberProfile.email,
+            display_name: memberProfile.display_name,
+          },
+        ]),
+      );
+    }
     const loadedOrganisations = memberships
       .map((membership) => membership.organisations)
       .filter((organisation): organisation is Organisation => Boolean(organisation));
@@ -643,7 +682,12 @@ export default function Home() {
       "";
 
     setUserProfile(profile);
-    setOrganisationMembers(memberships.map(({ organisations: _organisations, ...member }) => member));
+    setOrganisationMembers(
+      memberships.map(({ organisations: _organisations, ...member }) => ({
+        ...member,
+        profile: member.user_id ? profileById.get(member.user_id) ?? null : null,
+      })),
+    );
     setOrganisations(loadedOrganisations);
     setActiveOrganisationId(nextOrganisationId);
 
@@ -775,6 +819,29 @@ export default function Home() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supabase]);
+
+  useEffect(() => {
+    if (!supabase || user) return;
+    const supabaseClient = supabase;
+
+    async function loadSignupOrganisations() {
+      const { data } = await supabaseClient
+        .from("organisations")
+        .select("id,name")
+        .order("name", { ascending: true });
+      const loadedOrganisations = (data ?? []) as Organisation[];
+      setPublicOrganisations(loadedOrganisations);
+      if (!authOrganisationId && loadedOrganisations[0]) {
+        setAuthOrganisationId(loadedOrganisations[0].id);
+      }
+      if (loadedOrganisations.length === 0) {
+        setAuthOrganisationMode("new");
+      }
+    }
+
+    loadSignupOrganisations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [supabase, user]);
 
   useEffect(() => {
     if (user) loadOrganisationContext();
@@ -1259,6 +1326,31 @@ export default function Home() {
     await loadOrganisationContext();
   }
 
+  async function updateOrganisationMember(
+    member: OrganisationMember,
+    patch: Partial<Pick<OrganisationMember, "role" | "status">>,
+  ) {
+    if (!supabase || !user || !activeOrganisationId || !canManageMembers) return;
+    if (member.user_id === user.id && patch.status === "disabled") {
+      setToast({ tone: "error", text: "You cannot deactivate your own admin access." });
+      return;
+    }
+
+    const { error } = await supabase
+      .from("organisation_members")
+      .update({ ...patch, updated_at: new Date().toISOString() })
+      .eq("id", member.id)
+      .eq("organisation_id", activeOrganisationId);
+
+    if (error) {
+      setToast({ tone: "error", text: "Could not update member access." });
+      return;
+    }
+
+    setToast({ tone: "ok", text: "Member access updated." });
+    await loadOrganisationContext();
+  }
+
   async function recordExport(exportType: string) {
     if (!supabase || !user || !activeOrganisationId) return;
     await supabase.from("erp_exports").insert({
@@ -1396,10 +1488,17 @@ export default function Home() {
           authEmail={authEmail}
           authMode={authMode}
           authPassword={authPassword}
+          authOrganisationId={authOrganisationId}
+          authOrganisationMode={authOrganisationMode}
+          authOrganisationName={authOrganisationName}
           authUsername={authUsername}
           disabled={saving || !supabaseConfigured}
+          organisations={publicOrganisations}
           onEmail={setAuthEmail}
           onMode={setAuthMode}
+          onOrganisationId={setAuthOrganisationId}
+          onOrganisationMode={setAuthOrganisationMode}
+          onOrganisationName={setAuthOrganisationName}
           onPassword={setAuthPassword}
           onSubmit={handleAuth}
           onUsername={setAuthUsername}
@@ -1671,6 +1770,7 @@ export default function Home() {
               onMemberEmail={setMemberEmail}
               onMemberRole={setMemberRole}
               onOrganisationChange={setActiveOrganisationId}
+              onUpdateMember={updateOrganisationMember}
             />
           )}
         </section>
@@ -1942,22 +2042,36 @@ function BuildingIcon({ className }: NavIconProps) {
 function AuthPanel({
   authEmail,
   authMode,
+  authOrganisationId,
+  authOrganisationMode,
+  authOrganisationName,
   authPassword,
   authUsername,
   disabled,
+  organisations,
   onEmail,
   onMode,
+  onOrganisationId,
+  onOrganisationMode,
+  onOrganisationName,
   onPassword,
   onSubmit,
   onUsername,
 }: {
   authEmail: string;
   authMode: "sign-in" | "sign-up";
+  authOrganisationId: string;
+  authOrganisationMode: "existing" | "new";
+  authOrganisationName: string;
   authPassword: string;
   authUsername: string;
   disabled: boolean;
+  organisations: Organisation[];
   onEmail: (value: string) => void;
   onMode: (value: "sign-in" | "sign-up") => void;
+  onOrganisationId: (value: string) => void;
+  onOrganisationMode: (value: "existing" | "new") => void;
+  onOrganisationName: (value: string) => void;
   onPassword: (value: string) => void;
   onSubmit: (event: FormEvent) => void;
   onUsername: (value: string) => void;
@@ -1984,6 +2098,41 @@ function AuthPanel({
               placeholder="warehouse_admin"
               value={authUsername}
             />
+          </div>
+        )}
+        {authMode === "sign-up" && (
+          <div className="rounded border border-stone-200 bg-stone-50 p-3">
+            <label className="text-xs font-bold uppercase text-stone-600">
+              Organisation
+            </label>
+            <select
+              className="mt-1 w-full rounded border border-stone-300 bg-white px-3 py-3"
+              onChange={(event) => {
+                if (event.target.value === "__new__") {
+                  onOrganisationMode("new");
+                  onOrganisationId("");
+                  return;
+                }
+                onOrganisationMode("existing");
+                onOrganisationId(event.target.value);
+              }}
+              value={authOrganisationMode === "new" ? "__new__" : authOrganisationId}
+            >
+              {organisations.map((organisation) => (
+                <option key={organisation.id} value={organisation.id}>
+                  {organisation.name}
+                </option>
+              ))}
+              <option value="__new__">Create new organisation</option>
+            </select>
+            {authOrganisationMode === "new" && (
+              <input
+                className="mt-2 w-full rounded border border-stone-300 bg-white px-3 py-3"
+                onChange={(event) => onOrganisationName(event.target.value)}
+                placeholder="Organisation name"
+                value={authOrganisationName}
+              />
+            )}
           </div>
         )}
         <div>
@@ -2215,6 +2364,7 @@ function OrganisationPanel({
   onMemberEmail,
   onMemberRole,
   onOrganisationChange,
+  onUpdateMember,
 }: {
   activeOrganisation: Organisation;
   activeOrganisationId: string;
@@ -2228,6 +2378,10 @@ function OrganisationPanel({
   onMemberEmail: (value: string) => void;
   onMemberRole: (value: OrganisationRole) => void;
   onOrganisationChange: (value: string) => void;
+  onUpdateMember: (
+    member: OrganisationMember,
+    patch: Partial<Pick<OrganisationMember, "role" | "status">>,
+  ) => void;
 }) {
   const activeMembers = members.filter(
     (member) => member.organisation_id === activeOrganisationId,
@@ -2298,15 +2452,61 @@ function OrganisationPanel({
         {activeMembers.length === 0 && (
           <p className="p-3 text-sm text-stone-600">No members listed yet.</p>
         )}
-        {activeMembers.map((member) => (
-          <div className="grid gap-1 p-3 text-sm md:grid-cols-[1fr_160px_120px]" key={member.id}>
-            <p className="font-bold text-stone-950">
-              {member.invited_email || member.user_id || "Member"}
-            </p>
-            <p className="capitalize text-stone-600">{member.role.replace("_", " ")}</p>
-            <p className="uppercase text-stone-500">{member.status}</p>
+        {activeMembers.map((member) => {
+          const displayName =
+            member.profile?.display_name ||
+            member.profile?.username ||
+            member.invited_email ||
+            "Pending member";
+          const email = member.profile?.email || member.invited_email || "Email not linked yet";
+
+          return (
+          <div className="grid gap-3 p-3 text-sm lg:grid-cols-[minmax(220px,1fr)_minmax(240px,1fr)_180px_150px]" key={member.id}>
+            <div>
+              <p className="font-black text-stone-950">{displayName}</p>
+              <p className="text-xs font-semibold text-stone-500">
+                {member.profile?.username ? `@${member.profile.username}` : member.user_id || "Awaiting sign-up"}
+              </p>
+            </div>
+            <p className="break-all font-semibold text-stone-700">{email}</p>
+            {canManageMembers ? (
+              <select
+                aria-label={`Role for ${displayName}`}
+                className="h-11 rounded border border-stone-300 bg-white px-3 font-semibold text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2"
+                onChange={(event) =>
+                  onUpdateMember(member, { role: event.target.value as OrganisationRole })
+                }
+                value={member.role}
+              >
+                <option value="warehouse_staff">Warehouse staff</option>
+                <option value="supervisor">Supervisor</option>
+                <option value="admin">Admin</option>
+              </select>
+            ) : (
+              <p className="capitalize text-stone-600">{member.role.replace("_", " ")}</p>
+            )}
+            {canManageMembers ? (
+              <button
+                className={`h-11 rounded border px-3 font-black focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                  member.status === "active"
+                    ? "border-emerald-700 bg-emerald-50 text-emerald-900 focus:ring-emerald-700"
+                    : "border-red-300 bg-red-50 text-red-800 focus:ring-red-600"
+                }`}
+                onClick={() =>
+                  onUpdateMember(member, {
+                    status: member.status === "active" ? "disabled" : "active",
+                  })
+                }
+                type="button"
+              >
+                {member.status === "active" ? "Active" : "Inactive"}
+              </button>
+            ) : (
+              <p className="uppercase text-stone-500">{member.status}</p>
+            )}
           </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
