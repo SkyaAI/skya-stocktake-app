@@ -1351,6 +1351,31 @@ export default function Home() {
     await loadOrganisationContext();
   }
 
+  async function removeOrganisationMember(member: OrganisationMember) {
+    if (!supabase || !user || !activeOrganisationId || !canManageMembers) return;
+    if (member.user_id === user.id) {
+      setToast({ tone: "error", text: "You cannot remove your own admin access." });
+      return;
+    }
+
+    const memberLabel = member.profile?.email || member.invited_email || "this member";
+    if (!window.confirm(`Remove ${memberLabel} from this organisation?`)) return;
+
+    const { error } = await supabase
+      .from("organisation_members")
+      .delete()
+      .eq("id", member.id)
+      .eq("organisation_id", activeOrganisationId);
+
+    if (error) {
+      setToast({ tone: "error", text: "Could not remove member." });
+      return;
+    }
+
+    setToast({ tone: "ok", text: "Member removed from organisation." });
+    await loadOrganisationContext();
+  }
+
   async function recordExport(exportType: string) {
     if (!supabase || !user || !activeOrganisationId) return;
     await supabase.from("erp_exports").insert({
@@ -1770,6 +1795,7 @@ export default function Home() {
               onMemberEmail={setMemberEmail}
               onMemberRole={setMemberRole}
               onOrganisationChange={setActiveOrganisationId}
+              onRemoveMember={removeOrganisationMember}
               onUpdateMember={updateOrganisationMember}
             />
           )}
@@ -2364,6 +2390,7 @@ function OrganisationPanel({
   onMemberEmail,
   onMemberRole,
   onOrganisationChange,
+  onRemoveMember,
   onUpdateMember,
 }: {
   activeOrganisation: Organisation;
@@ -2378,6 +2405,7 @@ function OrganisationPanel({
   onMemberEmail: (value: string) => void;
   onMemberRole: (value: OrganisationRole) => void;
   onOrganisationChange: (value: string) => void;
+  onRemoveMember: (member: OrganisationMember) => void;
   onUpdateMember: (
     member: OrganisationMember,
     patch: Partial<Pick<OrganisationMember, "role" | "status">>,
@@ -2461,7 +2489,7 @@ function OrganisationPanel({
           const email = member.profile?.email || member.invited_email || "Email not linked yet";
 
           return (
-          <div className="grid gap-3 p-3 text-sm lg:grid-cols-[minmax(220px,1fr)_minmax(240px,1fr)_180px_150px]" key={member.id}>
+          <div className="grid gap-3 p-3 text-sm lg:grid-cols-[minmax(220px,1fr)_minmax(240px,1fr)_180px_150px_120px]" key={member.id}>
             <div>
               <p className="font-black text-stone-950">{displayName}</p>
               <p className="text-xs font-semibold text-stone-500">
@@ -2503,6 +2531,15 @@ function OrganisationPanel({
               </button>
             ) : (
               <p className="uppercase text-stone-500">{member.status}</p>
+            )}
+            {canManageMembers && (
+              <button
+                className="h-11 rounded border border-red-300 bg-white px-3 font-black text-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
+                onClick={() => onRemoveMember(member)}
+                type="button"
+              >
+                Remove
+              </button>
             )}
           </div>
           );
